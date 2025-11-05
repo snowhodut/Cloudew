@@ -1,0 +1,108 @@
+# ===========================================
+# 🔐 SECURITY / ENVIRONMENT
+# ===========================================
+
+# 환경 변수 파일 (AWS Key, Secret 포함)
+.env
+.env.*
+
+# AWS 자격 증명
+.aws/
+*.pem
+*.key
+
+# Streamlit 로그인 캐시
+.streamlit/secrets.toml
+
+# ===========================================
+# 🧠 PYTHON / VENV
+# ===========================================
+
+# 가상환경
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Python 빌드 결과
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# 캐시
+.pytest_cache/
+__pycache__/
+.cache/
+.ipynb_checkpoints/
+
+# pipenv / poetry 등
+Pipfile
+Pipfile.lock
+poetry.lock
+
+# ===========================================
+# 📊 DATA / LOGS
+# ===========================================
+
+# 로컬 테스트용 로그 및 데이터
+data/*.json
+!data/sample_findings.json
+!data/sample_logs.json
+
+# Streamlit 캐시 디렉토리
+.streamlit/
+.streamlit/config.toml
+
+# CloudWatch or Lambda 로그 덤프
+logs/
+*.log
+
+# ===========================================
+# 🧩 IDE / OS / MISC
+# ===========================================
+
+# VSCode / PyCharm 설정
+.vscode/
+.idea/
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp files
+*.tmp
+*.bak
+*.swp
+*.swo
+~$*
+
+# ===========================================
+# 🚀 DEPLOY / ARTIFACTS
+# ===========================================
+
+# Docker / Terraform / Zip 등
+*.tar
+*.zip
+*.gz
+*.bak
+.Dockerfile
+terraform.tfstate
+terraform.tfstate.backup
+
+# ===========================================
+# 🧾 STREAMLIT / OUTPUT
+# ===========================================
+
+# Streamlit 임시 세션
+.streamlit/config.toml
+.streamlit/credentials.toml
+.streamlit/.cache/
+
+# Streamlit 실행 로그
+.streamlit/logs/
