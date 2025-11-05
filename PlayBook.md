@@ -255,7 +255,7 @@ else:
 1. S3 로그 저장
     1. 버킷 구조
         
-        ```json
+        ```
         s3://cloudew-guardduty-response-logs/
         ├── UnauthorizedAccess_IAMUser_MaliciousIPCaller/
         │   ├── kim.chulsoo_2025-11-04T14-23-15.json
