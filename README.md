@@ -3,7 +3,7 @@
 ## 📌 Overview
 
 본 프로젝트는 AWS GuardDuty Findings를 EventBridge로 라우팅하여,
-Lambda 자동 대응 이후 Slack 알림을 수행하는 Serverless 기반 **보안 자동화 시스템(PoC)**입니다.
+Lambda 자동 대응 이후 Slack 알림을 수행하는 Serverless 기반 보안 자동화 시스템(PoC)입니다.
 
 ### 🔒 핵심 기능
 
@@ -13,8 +13,8 @@ Lambda 자동 대응 이후 Slack 알림을 수행하는 Serverless 기반 **보
 - Slack 알림 전송 (심각도별 포맷 지원)
 
 ## 🏗️ Architecture Diagram
+<img width="80%" alt="Image" src="https://github.com/user-attachments/assets/9e902e46-1a6e-4332-b85b-b5cefdf5066d" />
 
-![스크린샷 2025-11-04 222218.png](attachment:32745a4b-b1b4-4bac-a478-19548c853015:53e2640e-a468-49ac-9a41-b2eeb0444ade.png)
 
 ### 🧩 주요 구성 요소
 
