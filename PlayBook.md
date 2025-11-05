@@ -36,7 +36,7 @@ GuardDuty Finding 발생 시 EventBridge 규칙이 자동으로 Lambda 함수를
 
 ### 아키텍처 개요
 
-![image.png](attachment:0177616a-114a-499a-9b37-f59c1cbf2b1b:image.png)
+<img width="928" height="1329" alt="Image" src="https://github.com/user-attachments/assets/fd0d7e34-cf30-43d5-8d20-25bb67b3da18" />
 
 ## 대응 절차 (NIST Framework 기반)
 
