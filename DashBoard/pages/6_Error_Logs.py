@@ -1,24 +1,30 @@
+# pages/6_Error_Logs.py
 import streamlit as st
-from aws_client import logs, lambda_client
-import os
-from datetime import datetime, timedelta
+from utils.aws_session import get_aws_session
 
-st.header("🧩 Lambda 실행 상태 모니터링")
+st.title("🧾 Lambda / CloudWatch 에러 로그 모니터링")
 
-log_group = os.getenv("LOG_GROUP_NAME")
+# ✅ AWS 세션 가져오기
+session = get_aws_session()
+if not session:
+    st.stop()
 
-streams = logs.describe_log_streams(
-    logGroupName=log_group, orderBy="LastEventTime", descending=True, limit=5
-)["logStreams"]
+logs = session.client("logs", region_name="ap-northeast-2")
 
-for stream in streams:
-    name = stream["logStreamName"]
-    st.markdown(f"### 📄 {name}")
-    events = logs.get_log_events(logGroupName=log_group, logStreamName=name, limit=5)
-    for e in events["events"]:
-        st.code(e["message"])
+try:
+    streams = logs.describe_log_streams(
+        logGroupName="/aws/lambda/guardduty-response",
+        orderBy="LastEventTime",
+        descending=True,
+        limit=10,
+    )
 
-# Lambda 통계
-functions = lambda_client.list_functions(MaxItems=10)["Functions"]
-for f in functions:
-    st.metric(f["FunctionName"], f["LastModified"])
+    for s in streams["logStreams"]:
+        st.write(
+            f"📘 **{s['logStreamName']}** — 마지막 이벤트: {s.get('lastEventTimestamp', 'N/A')}"
+        )
+
+except logs.exceptions.ResourceNotFoundException:
+    st.warning("⚠️ 로그 그룹이 존재하지 않습니다.")
+except Exception as e:
+    st.error(f"로그 조회 중 오류 발생: {e}")
