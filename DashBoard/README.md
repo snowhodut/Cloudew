@@ -131,11 +131,11 @@ session = boto3.Session(profile_name="default", region_name="ap-northeast-2")
 | --- | --- |
 | **Profile** | 사용자 프로필 페이지로, 현재 AWS IAM 사용자명, 계정 ID, 프로필 사진, 닉네임을 표시합니다.|
 | **Overview** | SOAR 플레이북의 메타데이터와 전반적인 대응 상태를 요약합니다.|
-| **Detection_Monitor (2_Detection_Monitor.py)** | AWS GuardDuty에서 탐지된 최신 보안 이벤트(Findings)를 실시간으로 모니터링합니다.|
-| **Response_Stats (3_Response_Stats.py)** | Lambda 자동 대응 결과(정책 다운그레이드, 계정 격리, 로그 기록 등)를 통계적으로 분석 및 시각화합니다. |
-| **Metrics (4_Metrics.py)** | CloudWatch 메트릭을 기반으로 Lambda 함수의 평균 실행 시간, 오류율, 호출 횟수 등 KPI를 실시간으로 그래프로 표시합니다. |
-| **Incident_Details (5_Incident_Details.py)** | S3 버킷에 저장된 GuardDuty 대응 로그(JSON 파일)를 조회할 수 있습니다. |
-| **Error_Logs (6_Error_Logs.py)** | Lambda 함수의 CloudWatch 로그를 조회하여 실행 중 발생한 오류, 예외, 디버깅 메시지를 실시간으로 확인합니다. |
+| **Detection_Monitor** | AWS GuardDuty에서 탐지된 최신 보안 이벤트(Findings)를 실시간으로 모니터링합니다.|
+| **Response_Stats** | Lambda 자동 대응 결과(정책 다운그레이드, 계정 격리, 로그 기록 등)를 통계적으로 분석 및 시각화합니다. |
+| **Metrics** | CloudWatch 메트릭을 기반으로 Lambda 함수의 평균 실행 시간, 오류율, 호출 횟수 등 KPI를 실시간으로 그래프로 표시합니다. |
+| **Incident_Details** | S3 버킷에 저장된 GuardDuty 대응 로그(JSON 파일)를 조회할 수 있습니다. |
+| **Error_Logs** | Lambda 함수의 CloudWatch 로그를 조회하여 실행 중 발생한 오류, 예외, 디버깅 메시지를 실시간으로 확인합니다. |
 
 
 ---
