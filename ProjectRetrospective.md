@@ -1,4 +1,6 @@
+## 시스템 구조도
 <img width="1575" height="714" alt="image" src="https://github.com/user-attachments/assets/1d34cdff-08d8-48ff-ad34-933cc31d7436" />
+
 ##  기술적 의도
 
 ### 1. Guardduty Finding 심각도 기반 필터링 로직
@@ -40,8 +42,7 @@ Severity가 동일해도 공격자의 목적과 행위 유형에 따라
 L1 자동 격리는 핵심 권한만 즉시 제한합니다(IAM 정책 격리, Access Key 비활성화). 이를 통해 공격자의 추가 피해를 차단하고, 알림 대기 시간 없이 대응이 가능합니다.
 
 **개선된 3-Button 설계:**
-
-
+<img width="818" height="88" alt="image" src="https://github.com/user-attachments/assets/5d27c3fe-2a45-4c86-a1f8-f424c30fc746" />
 
 - 오탐 (격리 해제): 잘못 막은 경우 복원
 - 정탐 (추가 차단): 진짜 공격 확실한 경우 NACL 차단 추가
