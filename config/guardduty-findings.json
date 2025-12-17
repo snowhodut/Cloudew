@@ -1,0 +1,4 @@
+{
+    "source": ["aws.guardduty", "test.guardduty"],
+    "detail-type": ["GuardDuty Finding"]
+}

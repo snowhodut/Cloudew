@@ -1,0 +1,4 @@
+{
+    "source": ["custom.guardduty.ti"],
+    "detail-type": ["GUARDDUTY_FINDING_ANALYZED"]
+}

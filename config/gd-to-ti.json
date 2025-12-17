@@ -1,0 +1,4 @@
+{
+    "source": ["custom.guardduty.response"],
+    "detail-type": ["GUARDDUTY_FINDING_READY"]
+}
