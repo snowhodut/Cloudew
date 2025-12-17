@@ -1,0 +1,165 @@
+{
+    "law_metadata": {
+        "law_name": "정보통신망 이용촉진 및 정보보호 등에 관한 법률",
+        "short_name": "정보통신망법",
+        "enforcement_date": "2025-10-01",
+        "source_url": "https://www.law.go.kr/법령/정보통신망이용촉진및정보보호등에관한법률",
+        "guide_document": {
+            "title": "정보통신분야 침해사고 대응 안내서 (개정본)",
+            "url": "https://www.krcert.or.kr/kr/bbs/view.do?bbsId=B0000127&nttId=71853",
+            "publisher": "KISA",
+            "date": "2025-08-29"
+        }
+    },
+    "articles": {
+        "제48조의3": {
+            "title": "침해사고의 신고 등",
+            "summary": "정보통신서비스 제공자는 침해사고 발생 시 24시간 내 신고 의무",
+            "applicable_to": {
+                "description": "정보통신서비스 제공자",
+                "examples": [
+                    "전기통신사업자",
+                    "인터넷 홈페이지를 운영하는 영리사업자",
+                    "AWS를 사용하는 대부분의 웹서비스 기업"
+                ]
+            },
+            "reporting_criteria": {
+                "threshold": "침해사고 발생 (1건이라도)",
+                "deadline_hours": 24,
+                "starting_point": "침해사고의 발생을 알게 된 때부터",
+                "mandatory": true
+            },
+            "reporting_authority": {
+                "primary": "과학기술정보통신부 또는 한국인터넷진흥원",
+                "contact": {
+                    "name": "KISA 보호나라&KrCERT",
+                    "phone": "국번없이 118",
+                    "website": "https://www.krcert.or.kr",
+                    "online_report": "https://www.krcert.or.kr/kr/report/list.do?menuNo=205034",
+                    "email": "cert@krcert.or.kr"
+                }
+            },
+            "penalties": {
+                "no_report": {
+                    "type": "과태료",
+                    "amount": "3천만원 이하",
+                    "legal_basis": "정보통신망법 제76조"
+                },
+                "delayed_report": {
+                    "type": "과태료",
+                    "amount": "3천만원 이하",
+                    "condition": "24시간 이후 신고"
+                }
+            },
+            "required_information": [
+                "침해사고 유형",
+                "발생 일시",
+                "인지 경로",
+                "침해 내용",
+                "피해 규모",
+                "대응 조치 내역"
+            ]
+        },
+        "제48조의4": {
+            "title": "침해사고의 원인 분석 등",
+            "summary": "침해사고 관련 자료 보전 및 제출 의무",
+            "obligations": [
+                "침해사고 원인 분석",
+                "피해 확산 방지 조치",
+                "사고 대응 및 복구",
+                "재발 방지 필요 조치"
+            ],
+            "data_preservation": {
+                "required": true,
+                "types": [
+                    "침해사고 관련 로그",
+                    "시스템 백업",
+                    "네트워크 트래픽 기록",
+                    "악성코드 샘플"
+                ]
+            },
+            "penalties": {
+                "false_submission": {
+                    "type": "과태료",
+                    "amount": "1천만원 이하",
+                    "condition": "자료를 제출하지 않거나 거짓으로 제출"
+                }
+            }
+        }
+    },
+    "incident_types": [
+        "해킹",
+        "컴퓨터바이러스",
+        "논리폭탄",
+        "메일폭탄",
+        "서비스 거부 또는 방해",
+        "악성프로그램",
+        "그 밖에 정보통신망의 안정성 및 정보의 신뢰성을 침해하는 행위"
+    ],
+    "special_notes": {
+        "dual_reporting": {
+            "description": "정보통신서비스 제공자가 해킹으로 개인정보 유출된 경우",
+            "requirements": [
+                "침해사고 신고 (정보통신망법, 24시간 내)",
+                "개인정보 유출 신고 (개인정보보호법, 72시간 내)"
+            ],
+            "note": "두 신고 모두 필요함"
+        }
+    },
+    "exemptions": [],
+    "related_laws": [
+        {
+            "law": "개인정보보호법",
+            "article": "제34조",
+            "relationship": "개인정보 유출 시 추가 신고 필요"
+        }
+    ],
+    "compliance_checklist": [
+        {
+            "step": 1,
+            "action": "침해사고 발생 즉시 인지",
+            "deadline": "즉시"
+        },
+        {
+            "step": 2,
+            "action": "초기 대응 조치 (시스템 격리, 로그 보존)",
+            "deadline": "즉시"
+        },
+        {
+            "step": 3,
+            "action": "KISA에 침해사고 신고",
+            "deadline": "24시간 내"
+        },
+        {
+            "step": 4,
+            "action": "원인 분석 및 증거 수집",
+            "deadline": "진행 중"
+        },
+        {
+            "step": 5,
+            "action": "재발 방지 대책 수립",
+            "deadline": "사고 처리 후"
+        }
+    ],
+    "aws_specific_guidance": {
+        "applicable_services": [
+            "EC2",
+            "RDS",
+            "S3",
+            "DynamoDB",
+            "Lambda"
+        ],
+        "detection_methods": [
+            "GuardDuty Findings",
+            "CloudTrail 로그 분석",
+            "VPC Flow Logs",
+            "Config Rules"
+        ],
+        "evidence_collection": [
+            "GuardDuty Finding JSON",
+            "CloudTrail 이벤트 로그",
+            "시스템 스냅샷",
+            "네트워크 패킷 캡처"
+        ]
+    }
+}

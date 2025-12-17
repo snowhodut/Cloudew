@@ -1,0 +1,236 @@
+{
+    "law_metadata": {
+        "law_name": "개인정보 보호법",
+        "short_name": "개인정보보호법",
+        "enforcement_date": "2023-09-15",
+        "source_url": "https://www.law.go.kr/법령/개인정보보호법",
+        "guide_documents": [
+            {
+                "title": "개인정보 유출 대응 매뉴얼",
+                "url": "https://www.privacy.go.kr/cmm/fms/FileDown.do?atchFileId=FILE_000000000841153",
+                "publisher": "개인정보보호위원회"
+            },
+            {
+                "title": "개인정보 유출 등 대응 절차",
+                "url": "https://www.privacy.go.kr/front/wcp/spl/splRptInfo.do",
+                "publisher": "개인정보보호위원회"
+            }
+        ]
+    },
+    "articles": {
+        "제34조": {
+            "title": "개인정보 유출 통지·신고",
+            "summary": "개인정보 유출 시 정보주체 통지 및 개인정보보호위원회 신고",
+            "applicable_to": {
+                "description": "모든 개인정보처리자",
+                "note": "정보통신서비스 제공자는 특례 적용 (더 엄격)"
+            },
+            "notification_to_subjects": {
+                "deadline_hours": 72,
+                "starting_point": "개인정보가 유출되었음을 알게 되었을 때",
+                "methods": [
+                    "서면",
+                    "전자우편",
+                    "팩스",
+                    "전화",
+                    "문자전송",
+                    "이에 상당하는 방법"
+                ],
+                "required_information": [
+                    "유출된 개인정보 항목",
+                    "유출된 시점과 그 경위",
+                    "유출로 인해 발생 가능한 피해 최소화 방법",
+                    "개인정보처리자의 대응조치 및 피해구제 절차",
+                    "정보주체 피해 신고 접수 담당부서 및 연락처"
+                ],
+                "alternative_methods": {
+                    "condition": "정보주체 연락처를 알 수 없는 등 정당한 사유",
+                    "method": "인터넷 홈페이지에 30일 이상 게시",
+                    "fallback": "홈페이지 없으면 사업장 보기 쉬운 곳에 30일 이상 게시"
+                }
+            },
+            "reporting_to_authority": {
+                "deadline_hours": 72,
+                "criteria": [
+                    {
+                        "condition": "1천명 이상 정보주체 개인정보 유출",
+                        "threshold": 1000
+                    },
+                    {
+                        "condition": "민감정보 또는 고유식별정보 유출",
+                        "types": [
+                            "사상·신념",
+                            "노동조합·정당 가입·탈퇴",
+                            "정치적 견해",
+                            "건강·성생활",
+                            "유전정보·생체정보",
+                            "주민등록번호",
+                            "여권번호",
+                            "운전면허번호",
+                            "외국인등록번호"
+                        ]
+                    },
+                    {
+                        "condition": "외부 불법 접근에 의한 유출",
+                        "description": "해킹 등 외부로부터 불법적 접근"
+                    }
+                ],
+                "authority": {
+                    "name": "개인정보보호위원회",
+                    "delegated_to": "한국인터넷진흥원(KISA)",
+                    "contact": {
+                        "website": "https://privacy.kisa.or.kr",
+                        "phone": "국번없이 118",
+                        "email": "118@kisa.kr",
+                        "address": "전라남도 나주시 진흥길 9 한국인터넷진흥원 3층"
+                    }
+                }
+            },
+            "penalties": {
+                "no_notification": {
+                    "type": "과태료",
+                    "amount": "3천만원 이하",
+                    "legal_basis": "개인정보보호법 제75조 제2항 제18호"
+                },
+                "no_report": {
+                    "type": "과태료",
+                    "amount": "3천만원 이하",
+                    "legal_basis": "개인정보보호법 제75조 제2항 제18호"
+                },
+                "evidence_destruction": {
+                    "type": "벌칙",
+                    "amount": "2년 이하 징역 또는 2천만원 이하 벌금",
+                    "legal_basis": "개인정보보호법 제73조 제1항",
+                    "condition": "유출사고 관련 자료 은닉·폐기"
+                }
+            }
+        }
+    },
+    "data_breach_definition": {
+        "description": "법령이나 개인정보처리자의 자유로운 의사에 의하지 않고, 개인정보가 개인정보처리자의 관리·통제권을 벗어나 제3자가 내용을 알 수 있는 상태",
+        "includes": [
+            "분실",
+            "도난",
+            "유출"
+        ]
+    },
+    "evidence_preservation": {
+        "mandatory": true,
+        "reason": "개인정보보호위원회 행정조사 대비",
+        "recommended_actions": [
+            {
+                "type": "PC",
+                "action": "네트워크 분리 후 전원 차단, 디스크 분리 후 별도 보관"
+            },
+            {
+                "type": "일반 서버",
+                "action": "dd 명령어를 사용한 디스크 백업 수행"
+            },
+            {
+                "type": "가상 서버",
+                "action": "스냅샷 생성 및 가상디스크 파일(VMDK, VHD, QCOW 등) 보존"
+            },
+            {
+                "type": "보안장비",
+                "action": "생성로그 등 관련자료 일체 별도 백업"
+            },
+            {
+                "type": "악성코드",
+                "action": "격리 보존 (암호압축 보관)"
+            }
+        ],
+        "prohibited_actions": [
+            "시스템 폐기 및 포맷 등 데이터 초기화",
+            "악성코드 격리보존 없이 삭제",
+            "모니터링 및 보안로그 삭제"
+        ]
+    },
+    "special_cases": {
+        "financial_institutions": {
+            "description": "은행, 증권, 보험 등 금융기관",
+            "additional_requirement": {
+                "threshold": "1만명 이상 신용정보 유출",
+                "report_to": "금융위원회 또는 금융감독원",
+                "contact": "☎1332, https://www.fss.or.kr/s1332"
+            }
+        },
+        "telecom_service_providers": {
+            "description": "정보통신서비스 제공자",
+            "dual_reporting": true,
+            "requirements": [
+                "개인정보보호법 제34조 (개인정보 유출, 72시간 내)",
+                "정보통신망법 제48조의3 (침해사고, 24시간 내)"
+            ]
+        }
+    },
+    "compliance_workflow": [
+        {
+            "step": 1,
+            "action": "개인정보 유출 인지",
+            "deadline": "즉시"
+        },
+        {
+            "step": 2,
+            "action": "초기 대응 (시스템 격리, 증거 보존)",
+            "deadline": "즉시"
+        },
+        {
+            "step": 3,
+            "action": "정보주체 통지 (우선 통지 가능)",
+            "deadline": "72시간 내",
+            "note": "구체적 내용 미확인 시 확인된 내용만 우선 통지 후 추가 통지"
+        },
+        {
+            "step": 4,
+            "action": "개인정보보호위원회(KISA) 신고",
+            "deadline": "72시간 내",
+            "condition": "신고 기준 해당 시"
+        },
+        {
+            "step": 5,
+            "action": "피해 최소화 조치",
+            "deadline": "진행 중"
+        }
+    ],
+    "aws_classification_guidance": {
+        "high_risk_resources": {
+            "s3_buckets": {
+                "keywords": [
+                    "user",
+                    "customer",
+                    "personal",
+                    "member",
+                    "profile"
+                ],
+                "risk_level": "high"
+            },
+            "rds_instances": {
+                "keywords": [
+                    "prod",
+                    "user",
+                    "member",
+                    "customer"
+                ],
+                "risk_level": "high"
+            },
+            "dynamodb_tables": {
+                "keywords": [
+                    "User",
+                    "Customer",
+                    "Member",
+                    "Profile"
+                ],
+                "risk_level": "high"
+            }
+        },
+        "sensitive_data_indicators": [
+            "주민등록번호",
+            "여권번호",
+            "운전면허",
+            "신용카드",
+            "계좌번호",
+            "건강정보",
+            "생체정보"
+        ]
+    }
+}

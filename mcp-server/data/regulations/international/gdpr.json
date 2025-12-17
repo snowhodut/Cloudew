@@ -1,0 +1,170 @@
+{
+    "law_metadata": {
+        "law_name": "General Data Protection Regulation",
+        "short_name": "GDPR",
+        "enforcement_date": "2018-05-25",
+        "jurisdiction": "European Union + EEA",
+        "source_url": "https://gdpr-info.eu/",
+        "official_text": "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+    },
+    "territorial_scope": {
+        "article": "Article 3",
+        "applies_to": [
+            "EU 내 설립된 관리자/처리자의 개인정보 처리",
+            "EU 거주자에게 상품/서비스 제공",
+            "EU 거주자의 행동 모니터링"
+        ],
+        "note": "한국 기업도 EU 고객 있으면 적용됨"
+    },
+    "articles": {
+        "article_33": {
+            "title": "Notification of a personal data breach to the supervisory authority",
+            "summary": "감독기구에 개인정보 침해 통보",
+            "notification_requirement": {
+                "deadline_hours": 72,
+                "starting_point": "having become aware of it",
+                "recipient": "해당 EU 회원국 Data Protection Authority (DPA)",
+                "mandatory_conditions": [
+                    "likely to result in a risk to the rights and freedoms of natural persons"
+                ]
+            },
+            "required_information": [
+                "Nature of the personal data breach",
+                "Name and contact details of the data protection officer",
+                "Likely consequences of the breach",
+                "Measures taken or proposed to address the breach"
+            ],
+            "exemptions": [
+                "Breach unlikely to result in a risk to rights and freedoms",
+                "Encrypted data with secure key",
+                "Subsequent measures taken to ensure no risk"
+            ],
+            "penalties": {
+                "tier": 1,
+                "max_fine": "€10,000,000 or 2% of total worldwide annual turnover",
+                "whichever_is_higher": true,
+                "legal_basis": "GDPR Article 83(4)"
+            }
+        },
+        "article_34": {
+            "title": "Communication of a personal data breach to the data subject",
+            "summary": "정보주체에 개인정보 침해 통보",
+            "notification_requirement": {
+                "condition": "high risk to the rights and freedoms of natural persons",
+                "deadline": "without undue delay",
+                "language": "clear and plain language"
+            },
+            "required_information": [
+                "Nature of the breach",
+                "Contact details of data protection officer",
+                "Likely consequences",
+                "Measures taken or proposed"
+            ],
+            "exemptions": [
+                {
+                    "condition": "Encrypted data",
+                    "description": "Technical protection measures applied"
+                },
+                {
+                    "condition": "Subsequent measures",
+                    "description": "Measures taken to ensure no longer high risk"
+                },
+                {
+                    "condition": "Disproportionate effort",
+                    "alternative": "Public communication or similar measure"
+                }
+            ],
+            "penalties": {
+                "tier": 2,
+                "max_fine": "€20,000,000 or 4% of total worldwide annual turnover",
+                "whichever_is_higher": true,
+                "legal_basis": "GDPR Article 83(5)"
+            }
+        }
+    },
+    "supervisory_authorities": {
+        "description": "각 EU 회원국마다 DPA 존재",
+        "examples": [
+            {
+                "country": "Germany",
+                "authority": "BfDI (Federal Commissioner)",
+                "website": "https://www.bfdi.bund.de"
+            },
+            {
+                "country": "France",
+                "authority": "CNIL",
+                "website": "https://www.cnil.fr"
+            },
+            {
+                "country": "Ireland",
+                "authority": "DPC",
+                "website": "https://www.dataprotection.ie",
+                "note": "많은 미국 기업의 EU 본사가 아일랜드에 있음"
+            }
+        ],
+        "find_your_dpa": "https://edpb.europa.eu/about-edpb/about-edpb/members_en"
+    },
+    "applicability_check": {
+        "eu_ip_detected": {
+            "action": "GDPR likely applies",
+            "next_steps": [
+                "Check if data relates to EU resident",
+                "Prepare Article 33 notification",
+                "Consider Article 34 notification"
+            ]
+        },
+        "eu_region_resources": {
+            "examples": [
+                "eu-west-1",
+                "eu-central-1",
+                "eu-north-1"
+            ],
+            "action": "GDPR likely applies"
+        },
+        "s3_bucket_with_eu": {
+            "pattern": "*-eu-*",
+            "action": "Investigate further"
+        }
+    },
+    "compliance_workflow": [
+        {
+            "step": 1,
+            "action": "Assess if GDPR applies",
+            "criteria": "EU resident data involved?"
+        },
+        {
+            "step": 2,
+            "action": "Determine risk level",
+            "options": [
+                "Low risk",
+                "High risk"
+            ]
+        },
+        {
+            "step": 3,
+            "action": "Notify DPA (Article 33)",
+            "deadline": "72 hours",
+            "condition": "If likely risk"
+        },
+        {
+            "step": 4,
+            "action": "Notify data subjects (Article 34)",
+            "deadline": "Without undue delay",
+            "condition": "If high risk"
+        }
+    ],
+    "famous_fines": [
+        {
+            "company": "Meta (Facebook)",
+            "amount": "€1.2 billion",
+            "year": 2023,
+            "reason": "Data transfers to US"
+        },
+        {
+            "company": "Amazon",
+            "amount": "€746 million",
+            "year": 2021,
+            "reason": "Advertising practices"
+        }
+    ]
+}
