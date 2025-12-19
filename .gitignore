@@ -1,1 +1,19 @@
-venv
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+.venv/
+
+# Streamlit local storage
+data/
+profile/
+profile.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

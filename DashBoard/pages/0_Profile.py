@@ -122,7 +122,7 @@ st.divider()
 st.subheader("🪪 사용자 프로필 설정")
 
 nickname = st.text_input(
-    "닉네임 (대시보드에 표시될 이름)", placeholder="예: Cloudew_Admin"
+    "닉네임", placeholder="예: Cloudew_Admin"
 )
 uploaded_file = st.file_uploader(
     "프로필 이미지 업로드 (jpg/png)", type=["jpg", "jpeg", "png"]
@@ -147,3 +147,61 @@ if st.button("💾 프로필 저장"):
     with open(profile_path, "w", encoding="utf-8") as f:
         json.dump(profile_data, f, indent=2, ensure_ascii=False)
     st.success("✅ 프로필이 저장되었습니다!")
+
+st.divider()
+
+# =======================================
+# 🔑 API 키 설정 (BYOK)
+# =======================================
+st.subheader("🔑 API 키 설정")
+
+# 기존 API 키 로드
+api_keys = {}
+if os.path.exists(profile_path):
+    with open(profile_path, "r", encoding="utf-8") as f:
+        profile = json.load(f)
+    api_keys = profile.get("api_keys", {})
+
+# API 키 입력 필드
+claude_api_key = st.text_input(
+    "Claude API Key",
+    value=api_keys.get("claude", ""),
+    type="password",
+    help="Anthropic Claude API 키를 입력하세요."
+)
+abuseipdb_api_key = st.text_input(
+    "AbuseIPDB API Key",
+    value=api_keys.get("abuseipdb", ""),
+    type="password",
+    help="AbuseIPDB API 키를 입력하세요."
+)
+virustotal_api_key = st.text_input(
+    "VirusTotal API Key",
+    value=api_keys.get("virustotal", ""),
+    type="password",
+    help="VirusTotal API 키를 입력하세요."
+)
+
+# API 키 저장 버튼
+if st.button("🔐 API 키 저장"):
+    # 기존 프로필 로드
+    if os.path.exists(profile_path):
+        with open(profile_path, "r", encoding="utf-8") as f:
+            profile = json.load(f)
+    else:
+        profile = {}
+
+    # API 키 업데이트
+    profile["api_keys"] = {
+        "claude": claude_api_key,
+        "abuseipdb": abuseipdb_api_key,
+        "virustotal": virustotal_api_key
+    }
+
+    # 저장
+    with open(profile_path, "w", encoding="utf-8") as f:
+        json.dump(profile, f, indent=2, ensure_ascii=False)
+    st.success("✅ API 키가 안전하게 저장되었습니다!")
+
+# 보안 안내
+st.warning("⚠️ **보안 주의사항**\n- API 키는 로컬에만 저장되며, AWS에 업로드되지 않습니다.\n- 프로덕션 배포 시 환경 변수나 AWS Secrets Manager를 사용하세요.\n- 키 노출을 방지하기 위해 정기적으로 교체하세요.")

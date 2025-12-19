@@ -90,6 +90,10 @@ def lambda_handler(event, context):
             # [보류] 기록만
             result_message = handle_ignore(incident_data, user_name)
 
+        elif action_id == "btn_analyze":
+            # [상세 분석] 오케스트레이션 Lambda 호출
+            result_message = handle_analyze(incident_data, user_name)
+
         else:
             return error_response(f"알 수 없는 액션입니다: {action_id}")
 
@@ -175,6 +179,34 @@ def handle_rollback(data, user):
 def handle_ignore(data, user):
     source_ip = data.get("sourceIp") or data.get("ip")
     return f"📌 [보류] {source_ip} 모니터링 대상으로 기록.\n(담당자: {user})"
+
+
+def handle_analyze(data, user):
+    """상세 분석 요청 - 오케스트레이션 Lambda 호출"""
+    import boto3
+    lambda_client = boto3.client("lambda")
+
+    # 오케스트레이션 Lambda 호출
+    try:
+        response = lambda_client.invoke(
+            FunctionName="orchestration_lambda",  # 환경 변수로 설정 가능
+            InvocationType="RequestResponse",
+            Payload=json.dumps({
+                "httpMethod": "POST",
+                "path": "/api/analyze",
+                "body": json.dumps({"incident": data})
+            })
+        )
+        result = json.loads(response["Payload"].read())
+        if result.get("statusCode") == 200:
+            body = json.loads(result["body"])
+            analysis_id = body.get("analysis_id")
+            return f"🔍 [상세 분석 시작] 분석 ID: {analysis_id}\nStreamlit 대시보드의 MCP 대화 탭에서 확인하세요.\n(담당자: {user})"
+        else:
+            return f"❌ 분석 시작 실패: {result.get('body', 'Unknown error')}"
+    except Exception as e:
+        logger.error(f"Analyze invocation failed: {str(e)}")
+        return f"❌ 분석 요청 실패: {str(e)}"
 
 
 def get_next_rule_number(nacl_id):
