@@ -14,10 +14,13 @@ logger.setLevel(logging.INFO)
 # AWS 클라이언트 설정
 ec2 = boto3.client("ec2")
 dynamodb = boto3.resource("dynamodb")
+lambda_client = boto3.client("lambda")
 
 # 환경 변수 (없으면 기본값 사용)
 BLOCKED_TABLE = os.environ.get("BLOCKED_IPS_TABLE", "GuardDuty-BlockedIPs")
 IGNORED_TABLE = os.environ.get("IGNORED_IPS_TABLE", "GuardDuty-IgnoredIPs")
+DASHBOARD_URL = os.environ.get("DASHBOARD_URL", "http://localhost:8501")
+MCP_ORCHESTRATOR = os.environ.get("MCP_ORCHESTRATOR_FUNCTION", "mcp-orchestrator")
 
 
 def lambda_handler(event, context):
@@ -86,9 +89,9 @@ def lambda_handler(event, context):
             # [오탐] 기록 및 해제
             result_message = handle_rollback(incident_data, user_name)
 
-        elif action_id == "btn_ignore":
-            # [보류] 기록만
-            result_message = handle_ignore(incident_data, user_name)
+        elif action_id == "btn_claude_analysis":
+            # [MCP] Claude 분석 요청
+            result_message = handle_claude_analysis(incident_data, user_name)
 
         elif action_id == "btn_analyze":
             # [상세 분석] 오케스트레이션 Lambda 호출
@@ -176,9 +179,47 @@ def handle_rollback(data, user):
     return f"✅ [오탐 처리] {source_ip} 격리 해제 및 예외 처리 완료.\n(담당자: {user})"
 
 
-def handle_ignore(data, user):
-    source_ip = data.get("sourceIp") or data.get("ip")
-    return f"📌 [보류] {source_ip} 모니터링 대상으로 기록.\n(담당자: {user})"
+def handle_claude_analysis(data, user):
+    import time
+
+    # 세션 ID 생성
+    incident_id = data.get("incidentId", f"unknown-{int(time.time())}")
+    session_id = f"incident-{incident_id}-{int(time.time())}"
+
+    # MCP Orchestrator 페이로드 구성
+    orchestrator_payload = {
+        "session_id": session_id,
+        "user_name": user,
+        "incident_data": data,
+        "analysis_type": "initial_analysis",
+        "trigger": "slack_button",
+    }
+
+    # MCP Orchestrator 비동기 호출
+    try:
+        lambda_client.invoke(
+            FunctionName=MCP_ORCHESTRATOR,
+            InvocationType="Event",  # 비동기 (응답 안 기다림)
+            Payload=json.dumps(orchestrator_payload),
+        )
+        logger.info(f"✅ MCP Orchestrator 호출 성공: {session_id}")
+    except Exception as e:
+        logger.error(f"❌ MCP Orchestrator 호출 실패: {e}")
+        return f"❌ 분석 요청 실패: {str(e)}\n(담당자: {user})"
+
+    # 대시보드 URL 생성 (환경변수에서 가져온 URL 사용)
+    dashboard_link = f"{DASHBOARD_URL}/chat?session={session_id}"
+
+    source_ip = data.get("sourceIp") or data.get("ip", "Unknown")
+
+    return (
+        f"🤖 **Claude 분석 시작**\n\n"
+        f"• 대상 IP: `{source_ip}`\n"
+        f"• 세션 ID: `{session_id}`\n"
+        f"• 담당자: {user}\n\n"
+        f"👉 [실시간 분석 보기]({dashboard_link})\n\n"
+        f"_분석 결과는 약 10-30초 내에 대시보드에 표시됩니다._"
+    )
 
 
 def handle_analyze(data, user):
