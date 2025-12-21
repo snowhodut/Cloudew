@@ -1,1 +1,10 @@
 //requirements.txt
+fastapi
+uvicorn
+streamlit
+requests
+python-dotenv
+anthropic
+mcp
+boto3
+httpx
