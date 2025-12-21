@@ -22,7 +22,7 @@ analysis_table = dynamodb.Table(ANALYSIS_TABLE)
 # ===============================
 # MCP Server
 # ===============================
-MCP_SERVER_URL = os.environ.get("MCP_SERVER_URL", "http://localhost:8000")
+MCP_SERVER_URL = os.environ.get("MCP_SERVER_URL", "http://13.209.50.18:8000")
 
 # ===============================
 # Chat Storage (chat-history 테이블 사용)
