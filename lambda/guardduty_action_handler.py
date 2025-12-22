@@ -14,7 +14,7 @@ logger.setLevel(logging.INFO)
 # AWS 클라이언트 설정
 ec2 = boto3.client("ec2")
 dynamodb = boto3.resource("dynamodb")
-lambda_client = boto3.client("lambda")
+eventbridge = boto3.client("events")
 
 # 환경 변수 (없으면 기본값 사용)
 BLOCKED_TABLE = os.environ.get("BLOCKED_IPS_TABLE", "GuardDuty-BlockedIPs")
@@ -193,14 +193,19 @@ def handle_claude_analysis(data, user):
 
     # MCP Orchestrator 비동기 호출
     try:
-        lambda_client.invoke(
-            FunctionName=MCP_ORCHESTRATOR,
-            InvocationType="Event",  # 비동기 (응답 안 기다림)
-            Payload=json.dumps(orchestrator_payload),
+        eventbridge.put_events(
+            Entries=[
+                {
+                    "Source": "guardduty.slack-button",
+                    "DetailType": "Claude Analysis Request",
+                    "Detail": json.dumps(orchestrator_payload),
+                    "EventBusName": "default",  # 기본 이벤트 버스 사용
+                }
+            ]
         )
-        logger.info(f"✅ MCP Orchestrator 호출 성공: {session_id}")
+        logger.info(f"✅ EventBridge 이벤트 발행 성공: {session_id}")
     except Exception as e:
-        logger.error(f"❌ MCP Orchestrator 호출 실패: {e}")
+        logger.error(f"❌ EventBridge 이벤트 발행 실패: {e}")
         return f"❌ 분석 요청 실패: {str(e)}\n(담당자: {user})"
 
     # 대시보드 URL 생성 (환경변수에서 가져온 URL 사용)
