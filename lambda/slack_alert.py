@@ -2,6 +2,7 @@ import json
 import requests
 import os
 from datetime import datetime
+from api_key_manager import get_api_key_for_lambda
 
 
 def lambda_handler(event, context):
@@ -11,7 +12,23 @@ def lambda_handler(event, context):
     """
 
     detail = event["detail"]
-    webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
+
+    # 사용자 ID 추출 (API 키 조회용)
+    user = detail.get("user", "Unknown")
+    # user를 user_id로 사용 (IAM user name을 ID로 가정)
+    user_id = user if user != "Unknown" else "default-user"
+
+    # API 키에서 Slack Webhook URL 가져오기 (환경변수 우선, 없으면 DB)
+    webhook_url = os.environ.get("SLACK_WEBHOOK_URL")  # 환경변수 우선 확인
+    if not webhook_url:
+        # 환경변수 없으면 DB에서 가져오기
+        user = detail.get("user", "Unknown")
+        user_id = user if user != "Unknown" else "default-user"
+        webhook_url = get_api_key_for_lambda(user_id, "slackwebhook")
+    
+    if not webhook_url:
+        print(f"No Slack webhook URL found in env or DB for user {user_id}")
+        return {"statusCode": 400, "body": "Slack webhook URL not configured"}
 
     # 기본 정보 추출
     finding_type = detail.get("finding_type", "Unknown")

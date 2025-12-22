@@ -5,6 +5,7 @@ import os
 import base64
 import json
 from io import BytesIO
+from utils.api_key_manager import get_api_key_manager
 
 # =======================================
 # 🔐 AWS 계정 정보 가져오기
@@ -20,9 +21,16 @@ try:
     # IAM UserName 추출 (arn에서 마지막 부분)
     iam_user_name = user_arn.split("/")[-1] if "/" in user_arn else "Unknown"
     connected = True
+
+    # API 키 매니저 초기화
+    table_name = "UserConfigTable"  # CDK에서 정의된 테이블 이름
+    kms_key_id = "alias/guardduty-project-key"  # KMS 키 alias
+    api_key_manager = get_api_key_manager(session, table_name, kms_key_id)
+
 except Exception as e:
     connected = False
     account_id, user_arn, user_id, iam_user_name = "❌ 연결 실패", str(e), "-", "-"
+    api_key_manager = None
 
 # =======================================
 # ⚙️ Streamlit 페이지 설정
@@ -153,14 +161,16 @@ st.divider()
 # =======================================
 # 🔑 API 키 설정 (BYOK)
 # =======================================
-st.subheader("🔑 API 키 설정")
+st.subheader("🔑 API 키 및 URL 설정")
 
 # 기존 API 키 로드
 api_keys = {}
-if os.path.exists(profile_path):
-    with open(profile_path, "r", encoding="utf-8") as f:
-        profile = json.load(f)
-    api_keys = profile.get("api_keys", {})
+if connected and api_key_manager:
+    try:
+        api_keys = api_key_manager.get_api_keys(user_id)
+    except Exception as e:
+        st.error(f"API 키 로드 실패: {e}")
+        api_keys = {}
 
 # API 키 입력 필드
 claude_api_key = st.text_input(
@@ -182,26 +192,29 @@ virustotal_api_key = st.text_input(
     help="VirusTotal API 키를 입력하세요."
 )
 
+slack_webhook_url = st.text_input(
+    "Slack Webhook URL",
+    value=api_keys.get("slackwebhook", ""),
+    type="password",
+    help="Slack Webhook URL을 입력하세요."
+)
+
 # API 키 저장 버튼
 if st.button("🔐 API 키 저장"):
-    # 기존 프로필 로드
-    if os.path.exists(profile_path):
-        with open(profile_path, "r", encoding="utf-8") as f:
-            profile = json.load(f)
+    if not connected or not api_key_manager:
+        st.error("AWS 연결이 필요합니다.")
     else:
-        profile = {}
-
-    # API 키 업데이트
-    profile["api_keys"] = {
-        "claude": claude_api_key,
-        "abuseipdb": abuseipdb_api_key,
-        "virustotal": virustotal_api_key
-    }
-
-    # 저장
-    with open(profile_path, "w", encoding="utf-8") as f:
-        json.dump(profile, f, indent=2, ensure_ascii=False)
-    st.success("✅ API 키가 안전하게 저장되었습니다!")
+        try:
+            api_keys_to_save = {
+                "claude": claude_api_key,
+                "abuseipdb": abuseipdb_api_key,
+                "virustotal": virustotal_api_key,
+                "slackwebhook": slack_webhook_url
+            }
+            api_key_manager.save_api_keys(user_id, api_keys_to_save)
+            st.success("✅ API 키가 안전하게 암호화되어 저장되었습니다!")
+        except Exception as e:
+            st.error(f"API 키 저장 실패: {e}")
 
 # 보안 안내
-st.warning("⚠️ **보안 주의사항**\n- API 키는 로컬에만 저장되며, AWS에 업로드되지 않습니다.\n- 프로덕션 배포 시 환경 변수나 AWS Secrets Manager를 사용하세요.\n- 키 노출을 방지하기 위해 정기적으로 교체하세요.")
+st.warning("⚠️ **보안 주의사항**\n- API 키는 KMS로 암호화되어 DynamoDB에 안전하게 저장됩니다.\n- 키는 AWS KMS를 통해서만 복호화할 수 있습니다.\n- 키 노출을 방지하기 위해 정기적으로 교체하세요.")

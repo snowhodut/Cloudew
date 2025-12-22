@@ -3,21 +3,19 @@ import os
 import urllib.request
 import boto3
 import logging
+from api_key_manager import get_api_key_for_lambda
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 eventbridge = boto3.client("events")
 
-VT_API_KEY = os.getenv("VT_API_KEY")
-ABUSE_API_KEY = os.getenv("ABUSE_API_KEY")
-
 VT_URL = "https://www.virustotal.com/api/v3/ip_addresses/"
 ABUSE_URL = "https://api.abuseipdb.com/api/v2/check"
 
 
-def vt_lookup(ip):
-    req = urllib.request.Request(VT_URL + ip, headers={"x-apikey": VT_API_KEY})
+def vt_lookup(ip, api_key):
+    req = urllib.request.Request(VT_URL + ip, headers={"x-apikey": api_key})
     try:
         with urllib.request.urlopen(req) as res:
             data = json.loads(res.read().decode())
@@ -28,10 +26,10 @@ def vt_lookup(ip):
         return 0
 
 
-def abuse_lookup(ip):
+def abuse_lookup(ip, api_key):
     req = urllib.request.Request(
         ABUSE_URL + f"?ipAddress={ip}&maxAgeInDays=90",
-        headers={"Key": ABUSE_API_KEY, "Accept": "application/json"},
+        headers={"Key": api_key, "Accept": "application/json"},
     )
     try:
         with urllib.request.urlopen(req) as res:
@@ -53,8 +51,25 @@ def lambda_handler(event, context):
         logger.warning("No IP found in event, skipping")
         return {"status": "skipped"}
 
-    vt_engines = vt_lookup(ip)
-    abuse_score, reports = abuse_lookup(ip)
+    # 사용자 ID 추출
+    user = detail.get("user", "Unknown")
+    user_id = user if user != "Unknown" else "default-user"
+
+    # API 키 가져오기 (환경변수 우선, 없으면 DB)
+    vt_api_key = os.environ.get("VT_API_KEY")  # 환경변수 우선
+    if not vt_api_key:
+        vt_api_key = get_api_key_for_lambda(user_id, "virustotal")
+    
+    abuse_api_key = os.environ.get("ABUSE_API_KEY")  # 환경변수 우선  
+    if not abuse_api_key:
+        abuse_api_key = get_api_key_for_lambda(user_id, "abuseipdb")
+
+    if not vt_api_key or not abuse_api_key:
+        logger.error(f"API keys not found in env or DB for user {user_id}")
+        return {"status": "error", "message": "API keys not configured"}
+
+    vt_engines = vt_lookup(ip, vt_api_key)
+    abuse_score, reports = abuse_lookup(ip, abuse_api_key)
 
     threat_score = min(100, int((vt_engines * 4) + (abuse_score * 0.8)))
 
