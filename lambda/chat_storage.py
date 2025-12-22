@@ -1,4 +1,4 @@
-# /storage/chat_storage.py
+# /lambda/chat_storage.py
 """
 ChatStorage
 -----------
@@ -161,4 +161,3 @@ class ChatStorage:
         )
 
         return len(response.get("Items", [])) > 0
-
