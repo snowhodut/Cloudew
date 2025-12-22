@@ -93,10 +93,6 @@ def lambda_handler(event, context):
             # [MCP] Claude 분석 요청
             result_message = handle_claude_analysis(incident_data, user_name)
 
-        elif action_id == "btn_analyze":
-            # [상세 분석] 오케스트레이션 Lambda 호출
-            result_message = handle_analyze(incident_data, user_name)
-
         else:
             return error_response(f"알 수 없는 액션입니다: {action_id}")
 
@@ -185,8 +181,10 @@ def handle_claude_analysis(data, user):
     # 세션 ID 생성
     incident_id = data.get("incidentId", f"unknown-{int(time.time())}")
     session_id = f"incident-{incident_id}-{int(time.time())}"
+    # 대시보드 URL 생성 (환경변수에서 가져온 URL 사용)
+    dashboard_link = f"{DASHBOARD_URL}/chat?session={session_id}"
 
-    # MCP Orchestrator 페이로드 구성
+    # EventBridge 발행 - MCP Orchestrator
     orchestrator_payload = {
         "session_id": session_id,
         "user_name": user,
@@ -195,7 +193,6 @@ def handle_claude_analysis(data, user):
         "trigger": "slack_button",
     }
 
-    # MCP Orchestrator 비동기 호출
     try:
         eventbridge.put_events(
             Entries=[
@@ -203,7 +200,7 @@ def handle_claude_analysis(data, user):
                     "Source": "guardduty.slack-button",
                     "DetailType": "Claude Analysis Request",
                     "Detail": json.dumps(orchestrator_payload),
-                    "EventBusName": "default",  # 기본 이벤트 버스 사용
+                    "EventBusName": "default",
                 }
             ]
         )
@@ -211,9 +208,6 @@ def handle_claude_analysis(data, user):
     except Exception as e:
         logger.error(f"❌ EventBridge 이벤트 발행 실패: {e}")
         return f"❌ 분석 요청 실패: {str(e)}\n(담당자: {user})"
-
-    # 대시보드 URL 생성 (환경변수에서 가져온 URL 사용)
-    dashboard_link = f"{DASHBOARD_URL}/chat?session={session_id}"
 
     source_ip = data.get("sourceIp") or data.get("ip", "Unknown")
 
@@ -223,36 +217,8 @@ def handle_claude_analysis(data, user):
         f"• 세션 ID: `{session_id}`\n"
         f"• 담당자: {user}\n\n"
         f"👉 [실시간 분석 보기]({dashboard_link})\n\n"
-        f"_분석 결과는 약 10-30초 내에 대시보드에 표시됩니다._"
+        f"_분석 결과가 곧 대시보드에 표시됩니다._"
     )
-
-
-def handle_analyze(data, user):
-    """상세 분석 요청 - 오케스트레이션 Lambda 호출"""
-    import boto3
-    lambda_client = boto3.client("lambda")
-
-    # 오케스트레이션 Lambda 호출
-    try:
-        response = lambda_client.invoke(
-            FunctionName="orchestration_lambda",  # 환경 변수로 설정 가능
-            InvocationType="RequestResponse",
-            Payload=json.dumps({
-                "httpMethod": "POST",
-                "path": "/api/analyze",
-                "body": json.dumps({"incident": data})
-            })
-        )
-        result = json.loads(response["Payload"].read())
-        if result.get("statusCode") == 200:
-            body = json.loads(result["body"])
-            analysis_id = body.get("analysis_id")
-            return f"🔍 [상세 분석 시작] 분석 ID: {analysis_id}\nStreamlit 대시보드의 MCP 대화 탭에서 확인하세요.\n(담당자: {user})"
-        else:
-            return f"❌ 분석 시작 실패: {result.get('body', 'Unknown error')}"
-    except Exception as e:
-        logger.error(f"Analyze invocation failed: {str(e)}")
-        return f"❌ 분석 요청 실패: {str(e)}"
 
 
 def get_next_rule_number(nacl_id):
