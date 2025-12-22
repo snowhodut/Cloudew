@@ -28,6 +28,7 @@ MCP_SERVER_URL = os.environ.get("MCP_SERVER_URL", "http://13.209.50.18:8000")
 # Chat Storage (chat-history 테이블 사용)
 # ===============================
 from chat_storage import ChatStorage
+
 chat_storage = ChatStorage()
 
 
@@ -36,15 +37,22 @@ chat_storage = ChatStorage()
 # ===============================
 def lambda_handler(event, context):
     logger.info("=== Orchestration Lambda 호출 ===")
-    logger.info(f"Event: {json.dumps(event, indent=2)}")
+    logger.info(f"Event: {json.dumps(event, indent=2, default=str)}")
 
-    http_method = event.get("httpMethod") or event.get("requestContext", {}).get("httpMethod")
+    # EventBridge 이벤트 체크
+    if event.get("source") == "guardduty.slack-button":
+        return handle_eventbridge_event(event)
+
+    http_method = event.get("httpMethod") or event.get("requestContext", {}).get(
+        "httpMethod"
+    )
     path = event.get("path") or event.get("requestContext", {}).get("path")
     path_parameters = event.get("pathParameters") or {}
     body = event.get("body", "{}")
 
     if event.get("isBase64Encoded"):
         import base64
+
         body = base64.b64decode(body).decode("utf-8")
 
     try:
@@ -68,6 +76,77 @@ def lambda_handler(event, context):
 
 
 # ===============================
+# EventBridge 이벤트 처리
+# ===============================
+def handle_eventbridge_event(event):
+    detail = event.get("detail", {})
+
+    session_id = detail.get("session_id")
+    user_name = detail.get("user_name", "unknown")
+    incident_data = detail.get("incident_data", {})
+    analysis_type = detail.get("analysis_type", "initial_analysis")
+
+    logger.info(f"✅ EventBridge 이벤트 수신: session_id={session_id}")
+
+    # 1. 초기 메시지 저장
+    chat_storage.save_message(
+        session_id=session_id,
+        role="system",
+        content="🔍 Claude가 사건을 분석하고 있습니다...",
+        user_name="system",
+        incident_id=incident_data.get("incidentId"),
+    )
+
+    # 2. MCP 서버 호출
+    try:
+        response = requests.post(
+            f"{MCP_SERVER_URL}/analyze",
+            json={
+                "finding_data": incident_data,  # 변경: FastAPI 모델에 맞춤
+                "region": "KR",
+            },
+            timeout=60,
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            analysis_result = result.get("result", "분석 완료")
+
+            # 3. 결과 저장
+            chat_storage.save_message(
+                session_id=session_id,
+                role="assistant",
+                content=analysis_result,
+                user_name="claude-bot",
+                incident_id=incident_data.get("incidentId"),
+                report_type=analysis_type,
+            )
+
+            logger.info(f"✅ 분석 완료: {session_id}")
+        else:
+            logger.error(f"❌ MCP 분석 실패: {response.status_code}")
+            # 에러 메시지 저장
+            chat_storage.save_message(
+                session_id=session_id,
+                role="system",
+                content=f"❌ 분석 실패 (HTTP {response.status_code})",
+                user_name="system",
+            )
+
+    except Exception as e:
+        logger.error(f"💥 MCP 호출 에러: {e}")
+        # 에러 메시지 저장
+        chat_storage.save_message(
+            session_id=session_id,
+            role="system",
+            content=f"❌ 분석 오류: {str(e)}",
+            user_name="system",
+        )
+
+    return {"statusCode": 200, "body": json.dumps({"status": "completed"})}
+
+
+# ===============================
 # Incident 분석 시작
 # ===============================
 def handle_analyze(data):
@@ -84,20 +163,22 @@ def handle_analyze(data):
     analysis_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat() + "Z"
 
-    analysis_table.put_item(Item={
-        "id": analysis_id,
-        "incident_data": incident_data,
-        "status": "analyzing",
-        "created_at": now,
-        "updated_at": now,
-        "analysis_result": {}
-    })
+    analysis_table.put_item(
+        Item={
+            "id": analysis_id,
+            "incident_data": incident_data,
+            "status": "analyzing",
+            "created_at": now,
+            "updated_at": now,
+            "analysis_result": {},
+        }
+    )
 
     try:
         response = requests.post(
             f"{MCP_SERVER_URL}/analyze",
-            json={"incident": incident_data, "analysis_id": analysis_id},
-            timeout=15
+            json={"finding_data": incident_data, "region": "KR"},
+            timeout=15,
         )
         if response.status_code != 200:
             logger.error(f"[MCP] analyze 실패: {response.text}")
@@ -138,7 +219,7 @@ def handle_chat(data):
         role="user",
         content=message,
         user_name=user_name,
-        incident_id=analysis_id
+        incident_id=analysis_id,
     )
 
     assistant_reply = "오류 발생"
@@ -149,12 +230,8 @@ def handle_chat(data):
 
         response = requests.post(
             f"{MCP_SERVER_URL}/chat",
-            json={
-                "analysis_id": analysis_id,
-                "message": message,
-                "history": history
-            },
-            timeout=15
+            json={"analysis_id": analysis_id, "message": message, "history": history},
+            timeout=15,
         )
 
         if response.status_code == 200:
@@ -172,7 +249,7 @@ def handle_chat(data):
         role="assistant",
         content=assistant_reply,
         user_name="system-bot",
-        incident_id=analysis_id
+        incident_id=analysis_id,
     )
 
     return success_response({"response": assistant_reply})
@@ -195,12 +272,14 @@ def handle_status(analysis_id):
     if not item:
         return error_response("Analysis not found", 404)
 
-    return success_response({
-        "status": item.get("status"),
-        "analysis_result": item.get("analysis_result"),
-        "created_at": item.get("created_at"),
-        "updated_at": item.get("updated_at")
-    })
+    return success_response(
+        {
+            "status": item.get("status"),
+            "analysis_result": item.get("analysis_result"),
+            "created_at": item.get("created_at"),
+            "updated_at": item.get("updated_at"),
+        }
+    )
 
 
 # ===============================
@@ -211,9 +290,9 @@ def success_response(data):
         "statusCode": 200,
         "headers": {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
+            "Access-Control-Allow-Origin": "*",
         },
-        "body": json.dumps(data)
+        "body": json.dumps(data),
     }
 
 
@@ -222,7 +301,7 @@ def error_response(message, status_code=400):
         "statusCode": status_code,
         "headers": {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
+            "Access-Control-Allow-Origin": "*",
         },
-        "body": json.dumps({"error": message})
+        "body": json.dumps({"error": message}),
     }
