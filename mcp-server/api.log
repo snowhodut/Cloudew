@@ -1,0 +1,113 @@
+INFO:     Started server process [26264]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[MCP Worker] ✅ security_tool 임포트 성공
+[MCP Worker] ✅ compliance_tools 임포트 성공
+[12/22/25 13:21:08] INFO     Found credentials from IAM      credentials.py:1075
+                             Role: Cloudew-Server-Role                          
+[MCP Worker] ✅ SecurityToolbox 준비 완료
+[MCP Worker] ✅ ComplianceTool 준비 완료
+                    INFO     Processing request of type            server.py:713
+                             ListToolsRequest                                   
+🔄 MCP Tool Loop 1/10
+[12/22/25 13:21:14] INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 수집 요청: 193.56.29.47
+                    INFO     Warning: DeprecationWarning:          server.py:703
+                             datetime.datetime.utcnow() is                      
+                             deprecated and scheduled for removal               
+                             in a future version. Use                           
+                             timezone-aware objects to represent                
+                             datetimes in UTC:                                  
+                             datetime.datetime.now(datetime.UTC).               
+                    INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 수집 요청: test-user
+                    INFO     Warning: DeprecationWarning:          server.py:703
+                             datetime.datetime.utcnow() is                      
+                             deprecated and scheduled for removal               
+                             in a future version. Use                           
+                             timezone-aware objects to represent                
+                             datetimes in UTC:                                  
+                             datetime.datetime.now(datetime.UTC).               
+                    INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 규정 검토 요청: KR
+INFO:     13.209.50.18:47188 - "POST /chat HTTP/1.1" 200 OK
+[MCP Worker] ✅ security_tool 임포트 성공
+[MCP Worker] ✅ compliance_tools 임포트 성공
+[12/22/25 13:23:27] INFO     Found credentials from IAM      credentials.py:1075
+                             Role: Cloudew-Server-Role                          
+[MCP Worker] ✅ SecurityToolbox 준비 완료
+[MCP Worker] ✅ ComplianceTool 준비 완료
+[12/22/25 13:23:28] INFO     Processing request of type            server.py:713
+                             ListToolsRequest                                   
+🔄 MCP Tool Loop 1/10
+[12/22/25 13:23:33] INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 수집 요청: 193.56.29.47
+                    INFO     Warning: DeprecationWarning:          server.py:703
+                             datetime.datetime.utcnow() is                      
+                             deprecated and scheduled for removal               
+                             in a future version. Use                           
+                             timezone-aware objects to represent                
+                             datetimes in UTC:                                  
+                             datetime.datetime.now(datetime.UTC).               
+                    INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 규정 검토 요청: KR
+[MCP Worker] ✅ security_tool 임포트 성공
+[MCP Worker] ✅ compliance_tools 임포트 성공
+[12/22/25 13:24:36] INFO     Found credentials from IAM      credentials.py:1075
+                             Role: Cloudew-Server-Role                          
+[MCP Worker] ✅ SecurityToolbox 준비 완료
+[MCP Worker] ✅ ComplianceTool 준비 완료
+                    INFO     Processing request of type            server.py:713
+                             ListToolsRequest                                   
+🔄 MCP Tool Loop 1/10
+[12/22/25 13:24:41] INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 수집 요청: 193.56.29.47
+                    INFO     Warning: DeprecationWarning:          server.py:703
+                             datetime.datetime.utcnow() is                      
+                             deprecated and scheduled for removal               
+                             in a future version. Use                           
+                             timezone-aware objects to represent                
+                             datetimes in UTC:                                  
+                             datetime.datetime.now(datetime.UTC).               
+                    INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 규정 검토 요청: KR
+[MCP Worker] ✅ security_tool 임포트 성공
+[MCP Worker] ✅ compliance_tools 임포트 성공
+[12/22/25 13:26:33] INFO     Found credentials from IAM      credentials.py:1075
+                             Role: Cloudew-Server-Role                          
+[MCP Worker] ✅ SecurityToolbox 준비 완료
+[MCP Worker] ✅ ComplianceTool 준비 완료
+                    INFO     Processing request of type            server.py:713
+                             ListToolsRequest                                   
+🔄 MCP Tool Loop 1/10
+[12/22/25 13:26:38] INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 수집 요청: 193.56.29.47
+                    INFO     Warning: DeprecationWarning:          server.py:703
+                             datetime.datetime.utcnow() is                      
+                             deprecated and scheduled for removal               
+                             in a future version. Use                           
+                             timezone-aware objects to represent                
+                             datetimes in UTC:                                  
+                             datetime.datetime.now(datetime.UTC).               
+                    INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 수집 요청: test-user
+                    INFO     Warning: DeprecationWarning:          server.py:703
+                             datetime.datetime.utcnow() is                      
+                             deprecated and scheduled for removal               
+                             in a future version. Use                           
+                             timezone-aware objects to represent                
+                             datetimes in UTC:                                  
+                             datetime.datetime.now(datetime.UTC).               
+                    INFO     Processing request of type            server.py:713
+                             CallToolRequest                                    
+[MCP Worker] 🔍 규정 검토 요청: KR

@@ -1,0 +1,2 @@
+[console_scripts]
+awslabs.aws-api-mcp-server = awslabs.aws_api_mcp_server.server:main
