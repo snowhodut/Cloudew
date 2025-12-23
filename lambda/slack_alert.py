@@ -234,7 +234,6 @@ def lambda_handler(event, context):
                             "text": "🤖 Claude 분석 요청",
                             "emoji": True,
                         },
-                        "style": "default",
                         "value": button_value,
                         "action_id": "btn_claude_analysis",
                     },
