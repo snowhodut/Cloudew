@@ -26,13 +26,10 @@ MCP_ORCHESTRATOR = os.environ.get("MCP_ORCHESTRATOR_FUNCTION", "mcp-orchestrator
 def lambda_handler(event, context):
     logger.info("=== Slack Action Event 수신 ===")
 
-    # 1. Payload 파싱 (Slack 호환성 강화 버전)
-    payload = {}
+    # Payload 파싱
     try:
         if "body" in event:
             body_str = event["body"]
-
-            # Case A: 순수 JSON (테스트 도구 등)
             try:
                 body_json = json.loads(body_str)
                 if "payload" in body_json:
@@ -40,32 +37,37 @@ def lambda_handler(event, context):
                 else:
                     payload = body_json
             except ValueError:
-                # Case B: Slack 실제 요청 (application/x-www-form-urlencoded)
-                # Base64 인코딩 된 경우 처리 (API Gateway 설정에 따라 필요할 수 있음)
                 import base64
 
                 if event.get("isBase64Encoded", False):
                     body_str = base64.b64decode(body_str).decode("utf-8")
 
+                from urllib.parse import parse_qs
+
                 parsed_body = parse_qs(body_str)
                 if "payload" in parsed_body:
                     payload = json.loads(parsed_body["payload"][0])
                 else:
-                    logger.error("Body parsing failed: payload key not found")
-                    return error_response("Invalid request format")
+                    return error_response("Invalid format")
         else:
-            # 테스트 이벤트인 경우
             payload = event
 
-        # 2. 필요한 데이터 추출
+        # response_url 추출
+        response_url = payload.get("response_url")
+        if not response_url:
+            logger.error("❌ response_url이 없습니다!")
+            return {"statusCode": 200, "body": ""}
+
+        logger.info(f"Response URL: {response_url}")
+
+        # 액션 정보 추출
         actions = payload.get("actions", [])
         if not actions:
             return error_response("No actions found")
 
-        action_id = actions[0].get("action_id")  # Slack 버튼 ID (예: btn_block_more)
-        button_value = actions[0].get("value")  # 버튼에 숨겨진 데이터 (JSON)
+        action_id = actions[0].get("action_id")
+        button_value = actions[0].get("value")
 
-        # value가 JSON 문자열이면 파싱
         try:
             incident_data = json.loads(button_value)
         except:
@@ -75,33 +77,23 @@ def lambda_handler(event, context):
         user_name = user.get("username", "Unknown")
 
         logger.info(f"사용자: {user_name}, 액션: {action_id}")
-        logger.info(f"데이터: {incident_data}")
 
-        # 3. 액션 분기 처리
-        result_message = ""
-
-        # C(Slack)가 버튼 ID를 아래와 같이 설정했다고 가정합니다.
+        # 액션 분기 처리
         if action_id == "btn_block_more":
-            # [정탐] 실제 NACL 차단 로직
-            result_message = handle_block_nacl(incident_data, user_name)
-
+            result_text = handle_block_nacl(incident_data, user_name)
+            send_slack_message(response_url, result_text)
         elif action_id == "btn_rollback":
-            # [오탐] 기록 및 해제
-            result_message = handle_rollback(incident_data, user_name)
-
+            result_text = handle_rollback(incident_data, user_name)
+            send_slack_message(response_url, result_text)
         elif action_id == "btn_claude_analysis":
-            # [MCP] Claude 분석 요청
-            result_message = handle_claude_analysis(incident_data, user_name)
-
+            result_text = handle_claude_analysis(incident_data, user_name)
+            logger.info(f"📤 Slack 메시지 전송 시작")
+            send_slack_message(response_url, result_text)
         else:
-            return error_response(f"알 수 없는 액션입니다: {action_id}")
+            send_slack_message(response_url, f"❌ 알 수 없는 액션: {action_id}")
 
-        # 4. Slack 응답
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"replace_original": "true", "text": result_message}),
-        }
+        # Slack에 200 OK 즉시 응답
+        return {"statusCode": 200, "body": ""}  # 빈 응답
 
     except Exception as e:
         logger.error(f"Error: {str(e)}")
@@ -178,13 +170,11 @@ def handle_rollback(data, user):
 def handle_claude_analysis(data, user):
     import time
 
-    # 세션 ID 생성
     incident_id = data.get("incidentId", f"unknown-{int(time.time())}")
     session_id = f"incident-{incident_id}-{int(time.time())}"
-    # 대시보드 URL 생성 (환경변수에서 가져온 URL 사용)
     dashboard_link = f"{DASHBOARD_URL}/chat?session={session_id}"
 
-    # EventBridge 발행 - MCP Orchestrator
+    # EventBridge 발행
     orchestrator_payload = {
         "session_id": session_id,
         "user_name": user,
@@ -204,21 +194,22 @@ def handle_claude_analysis(data, user):
                 }
             ]
         )
-        logger.info(f"✅ EventBridge 이벤트 발행 성공: {session_id}")
+        logger.info(f"✅ EventBridge 발행: {session_id}")
     except Exception as e:
-        logger.error(f"❌ EventBridge 이벤트 발행 실패: {e}")
-        return f"❌ 분석 요청 실패: {str(e)}\n(담당자: {user})"
+        logger.error(f"❌ EventBridge 실패: {e}")
 
-    source_ip = data.get("sourceIp") or data.get("ip", "Unknown")
+    source_ip = data.get("sourceIp", "Unknown")
 
-    return (
-        f"🤖 **Claude 분석 시작**\n\n"
-        f"• 대상 IP: `{source_ip}`\n"
-        f"• 세션 ID: `{session_id}`\n"
+    # 간단한 텍스트 메시지로 응답
+    message = (
+        f"🤖 Claude 분석이 시작되었습니다.\n\n"
+        f"• 대상 IP: {source_ip}\n"
+        f"• 세션 ID: {session_id}\n"
         f"• 담당자: {user}\n\n"
-        f"👉 [실시간 분석 보기]({dashboard_link})\n\n"
-        f"_분석 결과가 곧 대시보드에 표시됩니다._"
+        f"{dashboard_link}"
     )
+
+    return message  # 문자열만 반환
 
 
 def get_next_rule_number(nacl_id):
@@ -237,4 +228,38 @@ def get_next_rule_number(nacl_id):
 
 
 def error_response(msg):
-    return {"statusCode": 400, "body": json.dumps({"error": msg})}
+    return {
+        "statusCode": 200,  # Slack에는 항상 200
+        "body": json.dumps({"text": f"❌ {msg}"}),
+    }
+
+
+def send_slack_message(response_url, message_text):
+    """response_url로 새 메시지 전송 (원본 유지)"""
+    import urllib.request
+
+    message = {
+        "text": message_text,
+        "response_type": "in_channel",  # 채널 전체가 보게
+        "replace_original": False,  # 원본 메시지 유지
+    }
+
+    try:
+        logger.info(f"📨 메시지 전송 중: {message_text[:50]}...")
+
+        data = json.dumps(message).encode("utf-8")
+        req = urllib.request.Request(
+            response_url, data=data, headers={"Content-Type": "application/json"}
+        )
+
+        response = urllib.request.urlopen(req, timeout=3)
+        status_code = response.getcode()
+        logger.info(f"✅ Slack 응답: {status_code}")
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Slack 전송 실패: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return False
