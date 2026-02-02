@@ -37,4 +37,3 @@ class EvidenceStorage:
             print(f"⚠️ [Storage Error] DynamoDB 저장 실패: {e}")
             # 테이블이 없거나 권한이 없어도 서버가 죽지 않게 예외 처리
             return False
-

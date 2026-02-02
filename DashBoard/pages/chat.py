@@ -55,7 +55,7 @@ textarea {
 # Query Param
 # ========================
 query_params = st.query_params
-analysis_id = query_params.get("analysis_id", None)
+analysis_id = query_params.get("analysis_id") or query_params.get("session")
 
 st.title("🛡️ MCP Incident Chat")
 
@@ -115,7 +115,7 @@ else:
             st.markdown(
                 f"""
                 <div class="bot-bubble">
-                    <div><b>🤖 MCP</b><br>{msg}</div>
+                    <div><b>☁  Cloudew</b><br>{msg}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -135,6 +135,7 @@ if (chatBox){
 """,
     unsafe_allow_html=True,
 )
+
 
 # ========================
 # 백엔드 호출 함수
