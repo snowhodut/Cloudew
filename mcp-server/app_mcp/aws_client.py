@@ -5,6 +5,7 @@ analyze_blast_radius()
 get_github_playbook()
 collect_forensic_evidence()
 """
+
 import os
 import asyncio
 from mcp import ClientSession, StdioServerParameters
@@ -17,12 +18,10 @@ class AwsMcpClient:
         # EC2에 Node.js와 해당 패키지가 설치되어 있어야 함
         self.server_params = StdioServerParameters(
             command="python",
-            args=[
-                "-m",
-                "awslabs.aws_api_mcp_server"  # 모듈명 (확인 필요)
-            ],
-            env=os.environ.copy()
+            args=["-m", "awslabs.aws_api_mcp_server"],  # 모듈명 (확인 필요)
+            env=os.environ.copy(),
         )
+
     async def call_tool(self, tool_name: str, arguments: dict = None):
         """
         AWS MCP 서버의 특정 도구를 호출하는 공통 함수
